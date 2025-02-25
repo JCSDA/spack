@@ -145,6 +145,8 @@ class NetcdfC(CMakePackage, AutotoolsPackage):
     variant("szip", default=True, description="Enable Szip compression plugin")
     variant("blosc", default=True, description="Enable Blosc compression plugin")
     variant("zstd", default=True, description="Enable Zstandard compression plugin")
+    # JCSDA fork only:
+    variant("parallel_tests", default=False, description="Run parallel tests", when="+mpi")
 
     with when("build_system=cmake"):
         # Based on the versions required by the root CMakeLists.txt:
@@ -398,6 +400,10 @@ class AutotoolsBuilder(BaseBuilder, autotools.AutotoolsBuilder):
             "--enable-netcdf-4",
         ]
 
+        # JCSDA fork only:
+        if self.spec.satisfies("+parallel_tests") and self.run_tests():
+            config_args.append("--enable-parallel-tests")
+
         # NCZarr was added in version 4.8.0 as an experimental feature and became a supported one
         # in version 4.8.1:
         if self.spec.satisfies("@4.8.1:"):
@@ -556,6 +562,7 @@ class AutotoolsBuilder(BaseBuilder, autotools.AutotoolsBuilder):
     # It looks like the issues with running the tests in parallel were fixed around version 4.6.0
     # (see https://github.com/Unidata/netcdf-c/commit/812c2fd4d108cca927582c0d84049c0f271bb9e0):
     @when("@:4.5.0")
-    def check(self):
+    @run_after("install")
+    def install_check(self):
         # h5_test fails when run in parallel
         make("check", parallel=False)

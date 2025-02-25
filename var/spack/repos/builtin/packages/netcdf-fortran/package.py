@@ -38,6 +38,8 @@ class NetcdfFortran(AutotoolsPackage):
     variant("pic", default=True, description="Produce position-independent code (for shared libs)")
     variant("shared", default=True, description="Enable shared library")
     variant("doc", default=False, description="Enable building docs")
+    # JCSDA fork only:
+    variant("parallel_tests", default=False, description="Enable parallel tests")
 
     depends_on("netcdf-c")
     depends_on("netcdf-c@4.7.4:", when="@4.5.3:")  # nc_def_var_szip required
@@ -130,12 +132,14 @@ class NetcdfFortran(AutotoolsPackage):
 
         netcdf_c_spec = self.spec["netcdf-c"]
         if "+mpi" in netcdf_c_spec or "+parallel-netcdf" in netcdf_c_spec:
-            # Prefixing with 'mpiexec -n 4' is not necessarily the correct way
-            # to launch MPI programs on a particular machine (e.g. 'srun -n 4'
-            # with additional arguments might be the right one). Therefore, we
-            # make sure the parallel tests are not launched at all (although it
-            # is the default behaviour currently):
-            config_args.append("--disable-parallel-tests")
+            # JCSDA fork only:
+            if self.spec.satisfies("+parallel_tests") and self.run_tests:
+                config_args.append("--enable-parallel-tests")
+                config_args.append("CC=%s" % self.spec["mpi"].mpicc)
+                config_args.append("FC=%s" % self.spec["mpi"].mpifc)
+                config_args.append("F77=%s" % self.spec["mpi"].mpifc)
+            else:
+                config_args.append("--disable-parallel-tests")
             if self.spec.satisfies("@4.5.0:4.5.2"):
                 # Versions from 4.5.0 to 4.5.2 check whether the Fortran MPI
                 # interface is available and fail the configuration if it is
@@ -153,7 +157,8 @@ class NetcdfFortran(AutotoolsPackage):
 
         return config_args
 
-    def check(self):
+    @run_after("install")
+    def install_check(self):
         make("check", parallel=self.spec.satisfies("@4.5:"))
 
     @run_after("install")
