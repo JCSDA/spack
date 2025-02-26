@@ -401,7 +401,7 @@ class AutotoolsBuilder(BaseBuilder, autotools.AutotoolsBuilder):
         ]
 
         # JCSDA fork only:
-        if self.spec.satisfies("+parallel_tests") and self.run_tests():
+        if self.spec.satisfies("+parallel_tests") and self.pkg.run_tests:
             config_args.append("--enable-parallel-tests")
 
         # NCZarr was added in version 4.8.0 as an experimental feature and became a supported one
