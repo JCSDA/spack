@@ -563,6 +563,6 @@ class AutotoolsBuilder(BaseBuilder, autotools.AutotoolsBuilder):
     # (see https://github.com/Unidata/netcdf-c/commit/812c2fd4d108cca927582c0d84049c0f271bb9e0):
     @when("@:4.5.0")
     @run_after("install")
-    def install_check(self):
+    def check(self):
         # h5_test fails when run in parallel
         make("check", parallel=False)
