@@ -95,7 +95,7 @@ class G2c(CMakePackage):
         env.set("G2C_INC", join_path(self.prefix, "include"))
 
     def patch(self):
-        filter_file("^(\s+find_package\(PkgConfig REQUIRED\))", r"#\1", "CMakeLists.txt")
+        filter_file(r"^(\s+find_package\(PkgConfig REQUIRED\))", r"#\1", "CMakeLists.txt")
 
     def check(self):
         with working_dir(self.builder.build_directory):
