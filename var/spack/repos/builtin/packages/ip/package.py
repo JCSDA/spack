@@ -63,6 +63,8 @@ class Ip(CMakePackage):
         description="Build deprecated spectral interpolation functions",
         when="@5.0:",
     )
+    # JCSDA repo only:
+    variant("alltests", default=False, description="Run full unit test suite", when="@5.3:")
 
     conflicts("+shared ~pic")
 
@@ -74,12 +76,31 @@ class Ip(CMakePackage):
     depends_on("lapack", when="@5.1:")
     depends_on("cmake@3.18:", when="@5.1:", type="build")
 
+    # JCSDA repo only:
+    resource(
+        name="ip-test-data-20241230.tgz",
+        url="https://ftp.emc.ncep.noaa.gov/static_files/public/NCEPLIBS-ip/ip-test-data-20241230.tgz",
+        sha256="3a33309f2451699c255717ffa60645f6c6862201a234b7bb77a340f5f5d345a8",
+        placement="testfiles",
+        expand=False,
+        when="+alltests",
+    )
+
     def cmake_args(self):
         args = [
             self.define_from_variant("OPENMP", "openmp"),
             self.define_from_variant("CMAKE_POSITION_INDEPENDENT_CODE", "pic"),
-            self.define("FTP_TEST_FILES", self.run_tests),
         ]
+
+        # JCSDA repo only:
+        if self.spec.satisfies("+alltests"):
+            args.append(self.define("FTP_TEST_FILES", self.run_tests))
+            args.append(
+                self.define(
+                    "TEST_FILES_CACHE",
+                    join_path(self.stage.source_path, "testfiles/ip-test-data-20241230.tgz"),
+                )
+            )
 
         if self.spec.satisfies("@4:"):
             args.append(self.define("BUILD_TESTING", self.run_tests))
@@ -126,4 +147,8 @@ class Ip(CMakePackage):
     @when("@4:")
     def check(self):
         with working_dir(self.builder.build_directory):
-            make("test")
+            # JCSDA repo only; main Spack repo should just use `ctest("-L", "NO_INPUT_DATA")`
+            if self.spec.satisfies("+alltests") or self.spec.satisfies("@:5.2"):
+                ctest()
+            else:
+                ctest("-L", "NO_INPUT_DATA")
