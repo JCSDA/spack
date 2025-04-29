@@ -145,7 +145,7 @@ class Ip(CMakePackage):
 
     @when("@4:")
     def check(self):
-        with working_dir(self.builder.build_directory):
+        with working_dir(self.build_directory):
             # JCSDA repo only; main Spack repo should just use `ctest("-L", "NO_INPUT_DATA")`
             if self.spec.satisfies("+alltests") or self.spec.satisfies("@:5.2"):
                 ctest()
