@@ -144,6 +144,10 @@ class Esmf(MakefilePackage, PythonExtension):
 
     conflicts("%aocc", when="@:8.3")
 
+    # Fix esmf@8.9.0b08 with llvm@20
+    # https://github.com/esmf-org/esmf/issues/411
+    patch("esmf890b08llvm20.patch", when="@8.9.0b08 %clang@20")
+
     # explicit type cast of variables from long to int
     patch("longtoint.patch", when="@:8.3.2 %cce@14:")
     patch("longtoint.patch", when="@:8.3.2 %oneapi@2022:")

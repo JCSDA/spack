@@ -1,0 +1,20 @@
+--- a/build_config/Linux.llvm.default/build_rules.mk
++++ b/build_config/Linux.llvm.default/build_rules.mk
+@@ -6,7 +6,7 @@
+ ############################################################
+ # Default compiler setting.
+ #
+-ESMF_F90DEFAULT         = flang
++ESMF_F90DEFAULT         = flang-new
+ ESMF_CXXDEFAULT         = clang++
+ ESMF_CDEFAULT           = clang
+ ESMF_CPPDEFAULT		= clang -E -P -x c
+@@ -239,7 +239,7 @@
+ ############################################################
+ # Link against libesmf.a using the C++ linker front-end
+ #
+-ESMF_CXXLINKLIBS += -lrt -lFortranDecimal -lflang_rt.runtime -lstdc++ -lm -ldl
++ESMF_CXXLINKLIBS += -lrt -lFortranRuntime -lFortranDecimal -lstdc++ -lm -ldl
+ 
+ ############################################################
+ # Linker option that ensures that the specified libraries are 
