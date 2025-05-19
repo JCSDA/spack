@@ -31,6 +31,7 @@ class Esmf(MakefilePackage, PythonExtension):
     # Develop is a special name for spack and is always considered the newest version
     version("develop", branch="develop")
     # generate chksum with 'spack checksum esmf@x.y.z'
+    version("8.9.0b09", commit="7e8c4b2f21bbea6432a3dadd6e6a7e143b786193")
     version("8.9.0b08", commit="56e26fde7b4890ae44eb3efdf2f6728b5eb4627e")
     version("8.9.0b05", commit="5df19ab277b4517a093af0510f08171c478ec627")
     version("8.8.1", sha256="b0acb59d4f000bfbdfddc121a24819bd2a50997c7b257b0db2ceb96f3111b173")
