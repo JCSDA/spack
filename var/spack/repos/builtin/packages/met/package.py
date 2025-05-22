@@ -40,7 +40,12 @@ class Met(AutotoolsPackage):
     variant("graphics", default=False, description="Enable compilation of mode_graphics")
 
     # JCSDA fork only
-    variant("shared-intel", default=False, when="%oneapi", description="Enable linking to shared intel libraries (libintlc instead of libirc)")
+    variant(
+        "shared-intel",
+        default=False,
+        when="@1.12.3 %oneapi",
+        description="Enable linking to shared intel libraries (libintlc instead of libirc)",
+    )
 
     depends_on("cxx", type="build")  # generated
     depends_on("fortran", type="build")  # generated

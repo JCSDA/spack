@@ -66,7 +66,12 @@ class ParallelNetcdf(AutotoolsPackage):
     conflicts("+examples", when="@:1.12")
 
     # JCSDA fork only
-    variant("shared-intel", default=False, when="@1.12.3 %oneapi", description="Enable linking to shared intel libraries (libintlc instead of libirc)")
+    variant(
+        "shared-intel",
+        default=False,
+        when="@1.12.3 %oneapi",
+        description="Enable linking to shared intel libraries (libintlc instead of libirc)",
+    )
 
     depends_on("mpi")
 
