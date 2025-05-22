@@ -43,7 +43,7 @@ class Met(AutotoolsPackage):
     variant(
         "shared-intel",
         default=False,
-        when="@1.12.3 %oneapi",
+        when="%oneapi",
         description="Enable linking to shared intel libraries (libintlc instead of libirc)",
     )
 
