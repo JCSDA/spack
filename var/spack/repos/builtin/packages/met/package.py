@@ -39,6 +39,9 @@ class Met(AutotoolsPackage):
     variant("modis", default=False, description="Enable compilation of modis")
     variant("graphics", default=False, description="Enable compilation of mode_graphics")
 
+    # JCSDA fork only
+    variant("shared-intel", default=False, when="%oneapi", description="Enable linking to shared intel libraries (libintlc instead of libirc)")
+
     depends_on("cxx", type="build")  # generated
     depends_on("fortran", type="build")  # generated
 
@@ -89,6 +92,8 @@ class Met(AutotoolsPackage):
     def setup_build_environment(self, env):
         spec = self.spec
         cppflags = []
+        fflags = []
+        fcflags = []
         ldflags = []
         libs = []
 
@@ -99,6 +104,10 @@ class Met(AutotoolsPackage):
         cppflags.append(netcdfcxx.libs.search_flags)
         ldflags.append(netcdfcxx.libs.ld_flags)
         libs.append(netcdfcxx.libs.link_flags)
+
+        if spec.satisfies("%oneapi") and spec.satisfies("+shared-intel"):
+            fflags.append("-shared-intel")
+            fcflags.append("-shared-intel")
 
         netcdfc = spec["netcdf-c"]
         if netcdfc.satisfies("+shared"):
@@ -166,6 +175,10 @@ class Met(AutotoolsPackage):
             env.set("MET_FREETYPE", freetype.prefix)
 
         env.set("CPPFLAGS", " ".join(cppflags))
+        if fflags:
+            env.set("FFLAGS", " ".join(fflags))
+        if fcflags:
+            env.set("FCFLAGS", " ".join(fcflags))
         env.set("LIBS", " ".join(libs))
         env.set("LDFLAGS", " ".join(ldflags))
 
