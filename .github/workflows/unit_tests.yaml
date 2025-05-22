@@ -30,10 +30,12 @@ jobs:
         python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
         on_develop:
         - ${{ github.ref == 'refs/heads/develop' }}
-        include:
-        - python-version: '3.7'
-          os: ubuntu-22.04
-          on_develop: ${{ github.ref == 'refs/heads/develop' }}
+        # DH 20250516 Comment out, can;t find pytest despite being installed
+        # https://github.com/JCSDA/spack/actions/runs/15067902641/job/42361423838?pr=539
+        #include:
+        #- python-version: '3.7'
+        #  os: ubuntu-22.04
+        #  on_develop: ${{ github.ref == 'refs/heads/develop' }}
         exclude:
         - python-version: '3.8'
           os: ubuntu-latest
