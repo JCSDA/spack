@@ -65,6 +65,9 @@ class ParallelNetcdf(AutotoolsPackage):
     variant("examples", default=False, description="Install example programs")
     conflicts("+examples", when="@:1.12")
 
+    # JCSDA fork only
+    variant("shared-intel", default=False, when="@1.12.3 %oneapi", description="Enable linking to shared intel libraries (libintlc instead of libirc)")
+
     depends_on("mpi")
 
     depends_on("m4", type="build")
@@ -75,8 +78,7 @@ class ParallelNetcdf(AutotoolsPackage):
     depends_on("perl", type="build")
 
     # https://github.com/JCSDA/spack-stack/issues/1436
-    patch("parallel-netcdf-1.12.3-intel-irc-intlc.patch", when="@1.12.3 %intel")
-    patch("parallel-netcdf-1.12.3-intel-irc-intlc.patch", when="@1.12.3 %oneapi")
+    patch("parallel-netcdf-1.12.3-intel-irc-intlc.patch", when="@1.12.3 +shared-intel %oneapi")
 
     @property
     def libs(self):
