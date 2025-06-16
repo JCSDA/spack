@@ -29,9 +29,7 @@ class Crtm(CMakePackage):
 
     license("CC0-1.0")
 
-    version(
-        "3.1.2", sha256="a96598e5611c263fa80d6d6375a12d70d74389b261a8070515a6698e41563281"
-    )
+    version("3.1.2", sha256="a96598e5611c263fa80d6d6375a12d70d74389b261a8070515a6698e41563281")
     version(
         "3.1.1-build1", sha256="1ed49e594da5d3769cbaa52cc7fc19c1bb0325ee6324f6057227c31e2d95ca67"
     )
