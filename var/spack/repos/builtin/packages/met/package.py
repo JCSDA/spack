@@ -1,5 +1,4 @@
-# Copyright 2013-2024 Lawrence Livermore National Security, LLC and other
-# Spack Project Developers. See the top-level COPYRIGHT file for details.
+# Copyright Spack Project Developers. See COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
@@ -14,12 +13,14 @@ class Met(AutotoolsPackage):
     configurable methods to compute statistics and diagnostics"""
 
     homepage = "https://dtcenter.org/community-code/model-evaluation-tools-met"
-    git = "https://github.com/dtcenter/MET"
     url = "https://github.com/dtcenter/MET/archive/refs/tags/v11.0.1.tar.gz"
+    git = "https://github.com/dtcenter/MET"
 
     maintainers("AlexanderRichert-NOAA", "climbfuji")
 
     version("develop", branch="develop")
+    version("12.0.1", sha256="ef396a99ca6c2248855848cd194f9ceaf3b051fb5e8c01a0b0b2a00110b1fcfb")
+    version("12.0.0", sha256="9a54275cfefbad6010d4449a8fa756ad40fae03fa62a766cbbfda170c422e5e4")
     version("11.1.1", sha256="d02f9281d46bc45c931ca233a51ce20ba2158c0dd26acac2cb76c5a68788022a")
     version("11.1.0", sha256="e2e371ae1f49185ff8bf08201b1a3e90864a467aa3369b04132d231213c3c9e5")
     version("11.0.2", sha256="f720d15e1d6c235c9a41fd97dbeb0eb1082fb8ae99e1bcdcb5e51be9b50bdfbf")
@@ -31,9 +32,6 @@ class Met(AutotoolsPackage):
     version("10.0.0", sha256="92f37c8bd83c951d86026cce294a16e4d3aa6dd41905629d0a729fa1bebe668a")
     version("9.1.3", sha256="7356a5ad79ca961fd965cadd93a7bf6c73b3aa5fb1a01a932580b94e66d0d0c8")
 
-    depends_on("cxx", type="build")  # generated
-    depends_on("fortran", type="build")  # generated
-
     variant("openmp", default=True, description="Use OpenMP multithreading")
     variant("grib2", default=False, description="Enable compilation of utilities using GRIB2")
     variant("python", default=False, description="Enable python embedding")
@@ -41,8 +39,20 @@ class Met(AutotoolsPackage):
     variant("modis", default=False, description="Enable compilation of modis")
     variant("graphics", default=False, description="Enable compilation of mode_graphics")
 
+    # JCSDA fork only
+    variant(
+        "shared-intel",
+        default=False,
+        when="%oneapi",
+        description="Enable linking to shared intel libraries (libintlc instead of libirc)",
+    )
+
+    depends_on("cxx", type="build")  # generated
+    depends_on("fortran", type="build")  # generated
+
     depends_on("gsl")
     depends_on("bufr")
+    depends_on("proj", when="@12:")
     depends_on("zlib-api")
     depends_on("netcdf-c")
     depends_on("netcdf-cxx4")
@@ -56,11 +66,12 @@ class Met(AutotoolsPackage):
     depends_on("cairo", when="+graphics")
     depends_on("freetype", when="+graphics")
 
-    depends_on("python@3.6.3:", when="+python")
+    depends_on("python@3.6.3:", when="+python", type=("build", "run"))
     depends_on("py-netcdf4", when="+python", type=("build", "run"))
     depends_on("py-numpy", when="+python", type=("build", "run"))
     depends_on("py-xarray", when="+python", type=("build", "run"))
     depends_on("py-pandas", when="+python", type=("build", "run"))
+    depends_on("patchelf@0.13:", when="platform=linux", type="build")
 
     patch("openmp_shape_patch.patch", when="@10.1.0")
 
@@ -86,6 +97,8 @@ class Met(AutotoolsPackage):
     def setup_build_environment(self, env):
         spec = self.spec
         cppflags = []
+        fflags = []
+        fcflags = []
         ldflags = []
         libs = []
 
@@ -96,6 +109,10 @@ class Met(AutotoolsPackage):
         cppflags.append(netcdfcxx.libs.search_flags)
         ldflags.append(netcdfcxx.libs.ld_flags)
         libs.append(netcdfcxx.libs.link_flags)
+
+        if spec.satisfies("%oneapi") and spec.satisfies("+shared-intel"):
+            fflags.append("-shared-intel")
+            fcflags.append("-shared-intel")
 
         netcdfc = spec["netcdf-c"]
         if netcdfc.satisfies("+shared"):
@@ -163,6 +180,10 @@ class Met(AutotoolsPackage):
             env.set("MET_FREETYPE", freetype.prefix)
 
         env.set("CPPFLAGS", " ".join(cppflags))
+        if fflags:
+            env.set("FFLAGS", " ".join(fflags))
+        if fcflags:
+            env.set("FCFLAGS", " ".join(fcflags))
         env.set("LIBS", " ".join(libs))
         env.set("LDFLAGS", " ".join(ldflags))
 
@@ -180,6 +201,11 @@ class Met(AutotoolsPackage):
 
         return args
 
+    @run_after("install", when="platform=linux")
+    def fixup_rpaths(self):
+        # set rpaths of binaries Python's lib directory
+        rpaths = self.spec["python"].libs.directories
 
-#    def setup_run_environment(self, env):
-#        env.set('MET_BASE', self.prefix)
+        for binary in find(self.prefix.bin, "*"):
+            patchelf = Executable("patchelf")
+            patchelf("--add-rpath", ":".join(rpaths), binary)
