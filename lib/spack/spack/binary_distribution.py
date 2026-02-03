@@ -374,8 +374,12 @@ class BinaryCacheIndex:
                     except FetchIndexError as e:
                         fetch_errors.append(e)
                         self._last_fetch_times[urlAndVersion] = (now, False)
-                    except BuildcacheIndexNotExists as e:
-                        fetch_errors.append(e)
+                    except BuildcacheIndexNotExists:  # as e:
+                        # DH* JCSDA fork only - silence warnings about non-existent
+                        # index for mirrors, because this warning is issued for all
+                        # mirrors (source, bootstrap, ...)
+                        # fetch_errors.append(e)
+                        # *DH
                         self._last_fetch_times[urlAndVersion] = (now, False)
                         # Binary caches are not required to have an index, don't raise
                         # if it doesn't exist.
@@ -420,8 +424,12 @@ class BinaryCacheIndex:
             except FetchIndexError as e:
                 fetch_errors.append(e)
                 self._last_fetch_times[urlAndVersion] = (now, False)
-            except BuildcacheIndexNotExists as e:
-                fetch_errors.append(e)
+            except BuildcacheIndexNotExists:  # as e:
+                # DH* JCSDA fork only - silence warnings about non-existent
+                # index for mirrors, because this warning is issued for all
+                # mirrors (source, bootstrap, ...)
+                # fetch_errors.append(e)
+                # *DH
                 self._last_fetch_times[urlAndVersion] = (now, False)
                 # Binary caches are not required to have an index, don't raise
                 # if it doesn't exist.
