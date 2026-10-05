@@ -251,4 +251,4 @@ config:
     containerise: containerize
     rm: remove
   extensions:
-  - ${SPACK_STACK_DIR}/spack-ext/lib/jcsda-omd/spack-stack
+  - ${SPACK_STACK_DIR}/spack-ext/lib/spack-stack
